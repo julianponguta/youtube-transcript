@@ -17,7 +17,7 @@ class TranscriptResponse(BaseModel):
 class VideoInfoResponse(BaseModel):
     title: str
     channel: str
-    duration: int
+    duration: str
     view_count: int
     description: str
     upload_date: str
@@ -51,6 +51,15 @@ def convert_time_format(text: str) -> str:
 
     # Join all parts with a single space
     return ' '.join(part for part in result_parts if part.strip())
+
+def format_duration(seconds: int) -> str:
+    minutes = seconds // 60
+    remaining_seconds = seconds % 60
+    return f"{minutes} minutos {remaining_seconds} segundos"
+
+def format_date(date_str: str) -> str:
+    # date_str viene en formato YYYYMMDD
+    return f"{date_str[:4]}/{date_str[4:6]}/{date_str[6:]}"
 
 @app.post("/convert-transcript/", response_model=TranscriptResponse)
 async def convert_transcript(request: TranscriptRequest):
@@ -89,10 +98,10 @@ async def get_video_info(request: TranscriptRequest):
             return VideoInfoResponse(
                 title=info.get('title', ''),
                 channel=info.get('channel', ''),
-                duration=info.get('duration', 0),
+                duration=format_duration(info.get('duration', 0)),
                 view_count=info.get('view_count', 0),
                 description=info.get('description', ''),
-                upload_date=info.get('upload_date', ''),
+                upload_date=format_date(info.get('upload_date', '')),
                 thumbnail=info.get('thumbnail', ''),
                 like_count=info.get('like_count'),
                 comment_count=info.get('comment_count')
