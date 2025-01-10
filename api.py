@@ -4,8 +4,18 @@ from youtube_transcript_api.formatters import WebVTTFormatter
 from pydantic import BaseModel
 from typing import Optional
 import yt_dlp
+from fastapi.middleware.cors import CORSMiddleware  # Importa CORSMiddleware
 
 app = FastAPI(title="Transcript Converter API")
+
+# Habilitar CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Permite solicitudes de cualquier origen
+    allow_credentials=True,
+    allow_methods=["*"],  # Permite todos los métodos HTTP
+    allow_headers=["*"],  # Permite todos los encabezados
+)
 
 class TranscriptRequest(BaseModel):
     video_id: str
