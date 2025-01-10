@@ -76,21 +76,24 @@ async def convert_transcript(request: TranscriptRequest):
     try:
         # Get transcript from YouTube
         transcript = YouTubeTranscriptApi.get_transcript(request.video_id, languages=[request.language])
-        
-        # Format to WebVTT
-        formatter = WebVTTFormatter()
-        text = formatter.format_transcript(transcript)
-        
-        # Remove WEBVTT header
-        text = text.replace("WEBVTT", "")
-        
-        # Convert time format
-        converted_text = convert_time_format(text)
-        
-        return {"converted_text": converted_text}
+    except Exception:
+        try:
+            # If spanish transcript fails, try english
+            transcript = YouTubeTranscriptApi.get_transcript(request.video_id, languages=['en'])
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=str(e))
     
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=str(e))
+    # Format to WebVTT
+    formatter = WebVTTFormatter()
+    text = formatter.format_transcript(transcript)
+    
+    # Remove WEBVTT header
+    text = text.replace("WEBVTT", "")
+    
+    # Convert time format
+    converted_text = convert_time_format(text)
+    
+    return {"converted_text": converted_text}
 
 @app.post("/video-info/", response_model=VideoInfoResponse)
 async def get_video_info(request: TranscriptRequest):
